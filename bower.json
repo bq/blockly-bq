@@ -1,0 +1,10 @@
+{
+    "name": "blockly",
+    "version": "0.0.1",
+    "main": "dist/your-awesome-js-module.js",
+    "ignore": [
+        "bower.json",
+        "README.md",
+        ".gitignore"
+    ]
+}
