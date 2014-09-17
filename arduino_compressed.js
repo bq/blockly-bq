@@ -173,7 +173,7 @@ Blockly.Arduino.scrub_ = function(block, code) {
       if (block.inputList[x].type == Blockly.INPUT_VALUE) {
         var childBlock = block.inputList[x].connection.targetBlock();
         if (childBlock) {
-          var comment = Blockly.Generator.allNestedComments(childBlock);
+          // var comment = Blockly.Generator.allNestedComments(childBlock);
           if (comment) {
             commentCode += Blockly.Generator.prefixLines(comment, '// ');
           }
