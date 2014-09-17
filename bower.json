@@ -1,7 +1,7 @@
 {
     "name": "blockly",
     "version": "0.0.1",
-    "main": "dist/your-awesome-js-module.js",
+    "main": "blockly_uncompressed.js",
     "ignore": [
         "bower.json",
         "README.md",
