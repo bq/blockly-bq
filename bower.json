@@ -1,5 +1,5 @@
 {
-    "name": "blockly",
+    "name": "blockly-bq",
     "version": "0.0.1",
     "main": "blockly_uncompressed.js",
     "ignore": [
