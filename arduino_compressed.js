@@ -420,6 +420,8 @@ Blockly.LANG_TEXT_TRIM_TITLE_SIDES='SIDES';
     Blockly.LANG_PROCEDURES_IFRETURN_WARNING = 'Warning: This block may only be used within a procedure.';
     
     
+    Blockly.LANG_VARIABLES_SET_TOOLTIP_1='Declare a Variable'; 
+    
 /**
  * List of illegal variable names.
  * This is not intended to be a security feature.  Blockly is 100% client-side,
@@ -498,11 +500,13 @@ Blockly.Arduino.init = function() {
     var defvars = [];
     var variables = Blockly.Variables.allVariables();
     for (var x = 0; x < variables.length; x++) {
-      defvars[x] = 'int ' +
-          Blockly.Arduino.variableDB_.getDistinctName(variables[x],
-          Blockly.Variables.NAME_TYPE) + ';\n';
+      //Retrieve variable
+      retVar=Blockly.Arduino.variableDB_.getDistinctName(variables[x],Blockly.Variables.NAME_TYPE);
+      //Check type of variable
+      if (retVar.substr(0, 3)=="txt") var prefix="String "; else var prefix="int ";
+      defvars[x] = prefix + retVar + ';\n';
     }
-    Blockly.Arduino.definitions_['variables'] = defvars.join('\n');
+    Blockly.Arduino.definitions_['variables'] = defvars.join(''); // defvars.join('\n');
   }
 };
 
@@ -1140,15 +1144,22 @@ Blockly.Arduino.variables_get = function() {
 
 Blockly.Arduino.variables_declare = function() {
   // Variable setter.
-  var dropdown_type = this.getFieldValue('TYPE');
+  var dropdown_type = this.getTitleValue('TYPE');
   //TODO: settype to variable
   var argument0 = Blockly.Arduino.valueToCode(this, 'VALUE',
-      Blockly.Arduino.ORDER_ASSIGNMENT) || '0';
-  var varName = Blockly.Arduino.variableDB_.getName(this.getFieldValue('VAR'),
+      Blockly.Arduino.ORDER_ASSIGNMENT);
+  var varName = Blockly.Arduino.variableDB_.getName(this.getTitleValue('VAR'),
       Blockly.Variables.NAME_TYPE);
-  var varType = this.getFieldValue('TYPE');
-  if (varType=='String') var prefix='txt'; else var prefix=''; 
-  Blockly.Arduino.setups_['setup_var'+varName] = prefix+varName.substring(0,varName.length-1) + ' = ' + argument0 + ';\n';
+  var varType = this.getTitleValue('TYPE');
+  if (varType=='String') {
+    var prefix='txt'; 
+    Blockly.Arduino.setups_['setup_var'+varName] = prefix+varName + ' = ' + argument0 + ';\n';
+  }
+  else{
+    var prefix=''; 
+    Blockly.Arduino.setups_['setup_var'+varName] = prefix+varName.substring(0,varName.length-1) + ' = ' +argument0 + ';\n';
+  }
+
   return '';
 };
 
@@ -1500,6 +1511,7 @@ Blockly.Blocks.controls_switch = {
 Blockly.Blocks.controls_switch_switch = {
   // If condition.
   init: function() {
+    this.setColour(Blockly.LANG_COLOUR_CONTROL);
     this.appendDummyInput()
         .appendField('switch');
     this.appendStatementInput('STACK');
@@ -1511,6 +1523,7 @@ Blockly.Blocks.controls_switch_switch = {
 Blockly.Blocks.controls_switch_case = {
   // case condition.
   init: function() {
+    this.setColour(Blockly.LANG_COLOUR_CONTROL);
     this.appendDummyInput()
         .appendField('case');
     this.setPreviousStatement(true);
@@ -1523,6 +1536,7 @@ Blockly.Blocks.controls_switch_case = {
 Blockly.Blocks.controls_switch_default = {
   // default condition.
   init: function() {
+    this.setColour(Blockly.LANG_COLOUR_CONTROL);
     this.appendDummyInput()
         .appendField('default');
     this.setPreviousStatement(true);
