@@ -29,7 +29,8 @@ Blockly.LANG_TEXT_TRIM_TITLE_SIDES='SIDES';
     Blockly.MSG_VAR_AS = 'as';
     Blockly.MSG_VAR_NUMBER = 'Number';
     Blockly.MSG_VAR_VALUE = 'value';
-
+    Blockly.LANG_VARIABLES_SET_TOOLTIP_1= 'Declare a variable'; 
+    
     // Context menus.
     Blockly.MSG_DUPLICATE_BLOCK = 'Duplicate';
     Blockly.MSG_REMOVE_COMMENT = 'Remove Comment';
@@ -419,8 +420,6 @@ Blockly.LANG_TEXT_TRIM_TITLE_SIDES='SIDES';
     Blockly.LANG_PROCEDURES_IFRETURN_TOOLTIP = 'If a value is true, then returns a value.';
     Blockly.LANG_PROCEDURES_IFRETURN_WARNING = 'Warning: This block may only be used within a procedure.';
     
-    
-    Blockly.LANG_VARIABLES_SET_TOOLTIP_1='Declare a Variable'; 
     
 /**
  * List of illegal variable names.
@@ -1144,22 +1143,15 @@ Blockly.Arduino.variables_get = function() {
 
 Blockly.Arduino.variables_declare = function() {
   // Variable setter.
-  var dropdown_type = this.getTitleValue('TYPE');
+  var dropdown_type = this.getFieldValue('TYPE');
   //TODO: settype to variable
   var argument0 = Blockly.Arduino.valueToCode(this, 'VALUE',
-      Blockly.Arduino.ORDER_ASSIGNMENT);
-  var varName = Blockly.Arduino.variableDB_.getName(this.getTitleValue('VAR'),
+      Blockly.Arduino.ORDER_ASSIGNMENT) || '0';
+  var varName = Blockly.Arduino.variableDB_.getName(this.getFieldValue('VAR'),
       Blockly.Variables.NAME_TYPE);
-  var varType = this.getTitleValue('TYPE');
-  if (varType=='String') {
-    var prefix='txt'; 
-    Blockly.Arduino.setups_['setup_var'+varName] = prefix+varName + ' = ' + argument0 + ';\n';
-  }
-  else{
-    var prefix=''; 
-    Blockly.Arduino.setups_['setup_var'+varName] = prefix+varName.substring(0,varName.length-1) + ' = ' +argument0 + ';\n';
-  }
-
+  var varType = this.getFieldValue('TYPE');
+  if (varType=='String') var prefix='txt'; else var prefix=''; 
+  Blockly.Arduino.setups_['setup_var'+varName] = prefix+varName.substring(0,varName.length-1) + ' = ' + argument0 + ';\n';
   return '';
 };
 
@@ -1511,7 +1503,6 @@ Blockly.Blocks.controls_switch = {
 Blockly.Blocks.controls_switch_switch = {
   // If condition.
   init: function() {
-    this.setColour(Blockly.LANG_COLOUR_CONTROL);
     this.appendDummyInput()
         .appendField('switch');
     this.appendStatementInput('STACK');
@@ -1523,7 +1514,6 @@ Blockly.Blocks.controls_switch_switch = {
 Blockly.Blocks.controls_switch_case = {
   // case condition.
   init: function() {
-    this.setColour(Blockly.LANG_COLOUR_CONTROL);
     this.appendDummyInput()
         .appendField('case');
     this.setPreviousStatement(true);
@@ -1536,7 +1526,6 @@ Blockly.Blocks.controls_switch_case = {
 Blockly.Blocks.controls_switch_default = {
   // default condition.
   init: function() {
-    this.setColour(Blockly.LANG_COLOUR_CONTROL);
     this.appendDummyInput()
         .appendField('default');
     this.setPreviousStatement(true);
@@ -2641,31 +2630,6 @@ Blockly.Blocks.procedures_callnoreturn = {
   }
 };
 
-Blockly.Blocks.procedures_callreturn = {
-  // Call a procedure with a return value.
-  category: Blockly.LANG_CATEGORY_PROCEDURES,  // Procedures are handled specially.
-  helpUrl: Blockly.LANG_PROCEDURES_CALLRETURN_HELPURL,
-  init: function() {
-    this.setColour(Blockly.LANG_COLOUR_PROCEDURES);
-    this.appendDummyInput()
-        .appendField(Blockly.LANG_PROCEDURES_CALLRETURN_CALL)
-        .appendField(Blockly.LANG_PROCEDURES_CALLRETURN_PROCEDURE, 'NAME');
-    this.setOutput(true, null);
-    this.setTooltip(Blockly.LANG_PROCEDURES_CALLRETURN_TOOLTIP);
-    this.arguments_ = [];
-    this.quarkConnections_ = null;
-    this.quarkArguments_ = null;
-  },
-  getProcedureCall: Blockly.Blocks.procedures_callnoreturn.getProcedureCall,
-  renameProcedure: Blockly.Blocks.procedures_callnoreturn.renameProcedure,
-  setProcedureParameters:
-      Blockly.Blocks.procedures_callnoreturn.setProcedureParameters,
-  mutationToDom: Blockly.Blocks.procedures_callnoreturn.mutationToDom,
-  domToMutation: Blockly.Blocks.procedures_callnoreturn.domToMutation,
-  renameVar: Blockly.Blocks.procedures_callnoreturn.renameVar,
-  customContextMenu: Blockly.Blocks.procedures_callnoreturn.customContextMenu
-};
-
 Blockly.Blocks.procedures_ifreturn = {
   // Conditionally return value from a procedure.
   category: Blockly.LANG_CATEGORY_PROCEDURES,
@@ -2755,6 +2719,7 @@ Blockly.Arduino.procedures_defreturn = function() {
   for (var x = 0; x < this.arguments_.length; x++) {
     args[x] = 'int '+Blockly.Arduino.variableDB_.getName(this.arguments_[x],
         Blockly.Variables.NAME_TYPE);
+    args[x]=args[x].substr(0,args[x].length-1);
   }
   var code = returnType + ' ' + funcName + '(' + args.join(', ') + ') {\n' +
       branch + returnValue + '}\n';
@@ -2767,31 +2732,6 @@ Blockly.Arduino.procedures_defreturn = function() {
 // a procedure with a return value.
 Blockly.Arduino.procedures_defnoreturn = Blockly.Arduino.procedures_defreturn;
 
-Blockly.Arduino.procedures_callreturn = function() {
-  // Call a procedure with a return value.
-  var funcName = Blockly.Arduino.variableDB_.getName(this.getFieldValue('NAME'),
-      Blockly.Procedures.NAME_TYPE);
-  var args = [];
-  for (var x = 0; x < this.arguments_.length; x++) {
-    args[x] = Blockly.Arduino.valueToCode(this, 'ARG' + x,
-        Blockly.Arduino.ORDER_NONE) || 'null';
-  }
-  var code = funcName + '(' + args.join(', ') + ')';
-  return [code, Blockly.Arduino.ORDER_UNARY_POSTFIX];
-};
-
-Blockly.Arduino.procedures_callnoreturn = function() {
-  // Call a procedure with no return value.
-  var funcName = Blockly.Arduino.variableDB_.getName(this.getFieldValue('NAME'),
-      Blockly.Procedures.NAME_TYPE);
-  var args = [];
-  for (var x = 0; x < this.arguments_.length; x++) {
-    args[x] = Blockly.Arduino.valueToCode(this, 'ARG' + x,
-        Blockly.Arduino.ORDER_NONE) || 'null';
-  }
-  var code = funcName + '(' + args.join(', ') + ');\n';
-  return code;
-};
 
 Blockly.Arduino.procedures_ifreturn = function() {
   // Conditionally return value from a procedure.
@@ -2807,4 +2747,245 @@ Blockly.Arduino.procedures_ifreturn = function() {
   }
   code += '}\n';
   return code;
+};
+
+
+
+Blockly.Arduino.procedures_callreturn = function() {
+  // Call a procedure with a return value.
+  var funcName = this.getFieldValue('PROCEDURES');
+  var args = [];//this.getInput('VARIABLES');//this.getVariables(funcName);
+
+  for (var x = 0; x < this.getVariables(funcName).length; x++) {
+    args[x] = Blockly.Arduino.valueToCode(this, 'VARIABLES' + x,
+        Blockly.Arduino.ORDER_NONE) || 'null';
+  }
+
+  var code = funcName + '(' + args.join(', ') + ')';
+  return [code, Blockly.Arduino.ORDER_UNARY_POSTFIX];
+};
+
+
+
+
+Blockly.Blocks.procedures_callreturn = {
+
+  // Variable getter.
+  category: Blockly.LANG_CATEGORY_PROCEDURES,  // Variables are handled specially.
+  helpUrl: Blockly.LANG_VARIABLES_GET_HELPURL,
+  init: function() {
+//    var last_procedure=''; // used to check wether or not a reload of the block is needed
+    this.setColour(Blockly.LANG_COLOUR_PROCEDURES);
+    
+    var dropdown=new Blockly.FieldDropdown(this.getProcedures());
+
+    this.appendDummyInput('DUMMY')
+        .appendField(dropdown, 'PROCEDURES');
+
+    this.addVariables(); 
+    this.setOutput(true); 
+    this.setTooltip(Blockly.LANG_PROCEDURES_CALLRETURN_TOOLTIP);
+    this.arguments_ = [];
+    this.quarkConnections_ = null;
+    this.quarkArguments_ = null;
+  },  
+  getProcedures: function() {
+        var procedures=Blockly.Procedures.allProcedures();
+        var procedures_dropdown=[]; 
+        if(procedures[1].length>0){
+            for (var i in procedures[1]){
+                procedures_dropdown.push([procedures[1][i][0],procedures[1][i][0]]);
+            }
+        }
+        else{
+            procedures_dropdown.push(['','']); 
+        }
+        return procedures_dropdown; 
+  },
+  renameProcedure: function(oldName, newName) {
+    var procedures= this.getProcedures(); 
+    for (var i in procedures){
+        if (Blockly.Names.equals(oldName, procedures[i][0])) {
+            var dropdown=new Blockly.FieldDropdown(this.getProcedures());
+            this.removeInput('DUMMY');  
+            this.appendDummyInput('DUMMY')
+                .appendField(dropdown, 'PROCEDURES'); 
+        }
+    }
+    this.addVariables();
+  },
+  onchange: function () {
+    if (!this.workspace) {
+      // Block has been deleted.
+      return;
+    }
+    if (this.getFieldValue('PROCEDURES')!== this.last_procedure){
+        this.addVariables();
+        this.last_procedure=this.getFieldValue('PROCEDURES');
+    }
+  },
+  addVariables: function(){
+    var func_variables=this.getVariables(this.getFieldValue('PROCEDURES')); //get the variables of the actual function
+    for (var i=0; i<this.maxVariableNumber(); i++){      // remove all the possible variable inputs
+        if (this.getInput('VARIABLES'+i)==null){
+            break; 
+        }
+        this.removeInput('VARIABLES'+i);
+    }
+    for (var variable in func_variables){
+        this.appendValueInput('VARIABLES'+variable)
+            .appendField(func_variables[variable]); 
+    }
+  },
+  maxVariableNumber: function(){
+    var procedures=Blockly.Procedures.allProcedures();
+        var procedures_dropdown=[]; 
+        var max_num=0; 
+        if(procedures[1].length>0){
+            for (var i in procedures[1]){
+                if (procedures[1][i][1].length>max_num){ // if the length of the variable array is larger than the max_num, equal max_num to that number
+                    max_num=procedures[1][i][1].length;
+                }
+            }
+            return max_num; 
+        }
+        else{
+            procedures_dropdown.push(['','']); 
+        }
+  },
+  getVariables: function(funcName){
+     var procedures=Blockly.Procedures.allProcedures();
+        var procedures_dropdown=[]; 
+        if(procedures[1].length>0){
+            for (var i in procedures[1]){
+                if (procedures[1][i][0]===funcName){
+                    return procedures[1][i][1]; 
+                }
+            } 
+        }
+        else{
+            procedures_dropdown.push(['','']); 
+        }
+  }
+};
+
+
+Blockly.Arduino.procedures_callnoreturn = function() {
+  // Call a procedure with a return value.
+  var funcName = this.getFieldValue('PROCEDURES');
+  var args = [];//this.getInput('VARIABLES');//this.getVariables(funcName);
+
+  for (var x = 0; x < this.getVariables(funcName).length; x++) {
+    args[x] = Blockly.Arduino.valueToCode(this, 'VARIABLES' + x,
+        Blockly.Arduino.ORDER_NONE) || 'null';
+  }
+
+  var code = funcName + '(' + args.join(', ') + ');\n';
+  return code;
+};
+
+
+
+Blockly.Blocks.procedures_callnoreturn = {
+  // Variable getter.
+  category: Blockly.LANG_CATEGORY_PROCEDURES,  // Variables are handled specially.
+  helpUrl: Blockly.LANG_VARIABLES_GET_HELPURL,
+  init: function() {
+    this.setColour(Blockly.LANG_COLOUR_PROCEDURES);
+    
+    var dropdown=new Blockly.FieldDropdown(this.getProcedures());
+
+    this.appendDummyInput('DUMMY')
+        .appendField(dropdown, 'PROCEDURES');
+
+    this.addVariables(); 
+
+    this.setPreviousStatement(true);
+    this.setNextStatement(true);
+    
+    this.setTooltip(Blockly.LANG_PROCEDURES_CALLRETURN_TOOLTIP);
+    this.arguments_ = [];
+    this.quarkConnections_ = null;
+    this.quarkArguments_ = null;
+  },
+  getProcedures: function() {
+        var procedures=Blockly.Procedures.allProcedures();
+        var procedures_dropdown=[]; 
+        if(procedures[0].length>0){
+            for (var i in procedures[0]){
+                procedures_dropdown.push([procedures[0][i][0],procedures[0][i][0]]);
+            }
+   }
+        else{
+            procedures_dropdown.push(['','']); 
+        }
+        return procedures_dropdown; 
+  },
+  renameProcedure: function(oldName, newName) {
+    var procedures= this.getProcedures(); 
+    for (var i in procedures){
+        if (Blockly.Names.equals(oldName, procedures[i][0])) {
+            var dropdown=new Blockly.FieldDropdown(this.getProcedures());
+            this.removeInput('DUMMY');  
+            this.appendDummyInput('DUMMY')
+                .appendField(dropdown, 'PROCEDURES'); 
+        }
+    }
+    this.addVariables();
+  },
+  onchange: function() {
+    if (!this.workspace) {
+      // Block has been deleted.
+      return;
+    }
+    if (this.getFieldValue('PROCEDURES')!== this.no_last_procedure){
+        this.addVariables();
+        this.no_last_procedure=this.getFieldValue('PROCEDURES');
+    }
+  },
+  addVariables: function(){
+    var func_variables=this.getVariables(this.getFieldValue('PROCEDURES')); //get the variables of the actual function
+    
+    for (var i=0; i<this.maxVariableNumber(); i++){      // remove all the possible variable inputs
+        if (this.getInput('VARIABLES'+i)==null){
+            break; 
+        }
+        this.removeInput('VARIABLES'+i);
+        
+    }
+    for (var variable in func_variables){
+        this.appendValueInput('VARIABLES'+variable)
+            .appendField(func_variables[variable]); 
+    }
+  },
+  maxVariableNumber: function(){
+    var procedures=Blockly.Procedures.allProcedures();
+        var procedures_dropdown=[]; 
+        var max_num=0; 
+        if(procedures[0].length>0||procedures[1].length>0){
+            for (var i in procedures[0]){
+                if (procedures[0][i][1].length>max_num){ // if the length of the variable array is larger than the max_num, equal max_num to that number
+                    max_num=procedures[0][i][1].length;
+                }
+            }
+            return max_num; 
+        }
+        else{
+            procedures_dropdown.push(['','']); 
+        }
+  },
+  getVariables: function(funcName){
+     var procedures=Blockly.Procedures.allProcedures();
+        var procedures_dropdown=[]; 
+        if(procedures[0].length>0 || procedures[1].length>0){
+            for (var i in procedures[0]){
+                if (procedures[0][i][0]===funcName){
+                    return procedures[0][i][1]; 
+                }
+            } 
+        }
+        else{
+            procedures_dropdown.push(['','']); 
+        }
+  }
 };
