@@ -1,0 +1,9 @@
+tmp
+target
+node_modules
+bower_components
+
+# Editor File Ignore
+*.sublime-project
+*.sublime-workspace
+.idea/
