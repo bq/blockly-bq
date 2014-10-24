@@ -1,6 +1,6 @@
 {
     "name": "blockly-bq",
-    "version": "0.0.7",
+    "version": "0.0.8",
     "main": "blockly_compressed.js",
     "ignore": [
         "bower.json",
