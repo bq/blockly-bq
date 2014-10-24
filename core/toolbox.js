@@ -165,8 +165,9 @@ Blockly.Toolbox.populate_ = function() {
                 treeOut.add(childOut);
 
                 var categoryName = childIn.getAttribute('name').toLowerCase().replace(' ', '');
-                childOut.setId(categoryName);
-                childOut.setIconClass('category__icon category--' + categoryName);
+                var categoryId = childIn.getAttribute('id').toLowerCase().replace(' ', '');
+                childOut.setId(categoryId);
+                childOut.setIconClass('category__icon category--' + categoryId);
 
                 var custom = childIn.getAttribute('custom');
                 if (custom) {
